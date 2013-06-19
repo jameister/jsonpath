@@ -5,7 +5,7 @@
 
 This is an implementation of [JSONPath][1] (like [XPath][2] for [JSON][3]) in
 the [OCaml][4] language, intended for use as a command line tool in shell
-pipelines. It is *not* meant to be used as a library within other OCaml
+pipelines. It is **not** meant to be used as a library within other OCaml
 programs.
 
 If you're processing JSON in OCaml, check out the functions available in
@@ -24,11 +24,13 @@ writing a throwaway program. `jsonpath` is for those times.
 ## How
 
 ### Setup
+
 Building requires OCaml 3.12 or newer with `Findlib`, `Core_kernel`, and
 `Yojson`. Those libraries are available in [OPAM][7]. Then just type make,
 which will invoke OCamlbuild and produce the executable `jsonpath`.
 
 ### Usage
+
 `jsonpath` takes JSON records on standard input (one per line) and returns a
 JSON list of extracted results for each record. The extraction is performed
 according to the path specified as a command line argument. For example:
@@ -43,9 +45,11 @@ I can extract the price of every product in each store with `jsonpath` like so:
     [12.49,17.25]
     [279.99,600]
 
-Here $ represents the root of a JSON record. Applying the path $ to a JSON
+Here `$` represents the root of a JSON record. Applying the path `$` to a JSON
 record returns a list containing one result: the whole JSON record. All paths
-begin with $. You can write the $ if you want, or you can omit it.
+begin with `$`. You can write this `$` if you want, or you can omit it, since
+its presence at the beginning is implicit. `$` is not allowed elsewhere in
+paths.
 
 So, starting with a list containing the whole record, `jsonpath` applies the
 path components to each element of the list of values returned so far. In our
@@ -55,7 +59,9 @@ example:
 - `.store` extracts the member of this object named store, another JSON object.
 - `.products` extracts the member named products, a JSON array.
 - `.*` extracts all the products, in this case two JSON objects.
-- `.price` finally returns the member named price, applied to *both* objects.
+- `.price` finally returns the member named price, applied to **both** objects.
+
+### Path Syntax
 
 In general, the allowed components of a path are:
 
@@ -111,6 +117,19 @@ The name of the store, then all its prices:
     $ ./jsonpath '["store"]["name"]' '..price' <sample.json
     ["Jim's Sporting Goods",12.49,17.25]
     ["Bob's Electronics",279.99,600]
+
+## Notes
+
+The [original JSONPath definition][8] includes a few more features:
+
+- Step values in slices, like `[1:10:2]`, will be implemented soon.
+- "Expressions of the underlying script language" in parentheses, applied to
+  the current node called `@`, like `[(@.length - 1)]`. This will never be
+  supported. If you want to write an OCaml program, write an OCaml program.
+- Filter expressions, using a restricted set of operators, like `[?(@.price >
+  100)]`. I might add support for these, but I'm undecided... the syntax is
+  really awful, and this might be a good point to consider writing a
+  full-fledged OCaml program with [Yojson combinators][5] or an [ATD][6].
 
 [1]: http://goessner.net/articles/JsonPath/
 [2]: http://www.w3.org/TR/xpath/
