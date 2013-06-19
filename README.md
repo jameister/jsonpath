@@ -138,3 +138,4 @@ The [original JSONPath definition][8] includes a few more features:
 [5]: http://mjambon.com/yojson-doc/Yojson.Basic.Util.html
 [6]: http://mjambon.com/atdgen/atdgen-manual.html
 [7]: http://opam.ocamlpro.com/
+[8]: http://goessner.net/articles/JsonPath/
