@@ -126,6 +126,7 @@ The name of the store, then all its prices:
 The [original JSONPath definition][8] includes a few more features:
 
 - Step values in slices, like `[1:10:2]`. Could add these.
+- The component `..*`, which doesn't really make any sense.
 - "Expressions of the underlying script language" in parentheses, applied to
   the current node called `@`, like `[(@.length - 1)]`. This will never be
   supported. If you want to write an OCaml program, write an OCaml program.
