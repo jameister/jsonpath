@@ -20,6 +20,8 @@
 path:
   | DOLLAR? path = component+ EOF
       { path }
+  | DOLLAR? _e = error
+      { syntax_error "expected . or [" $startpos(_e) $endpos(_e) }
 
 component:
   | DOT STAR
