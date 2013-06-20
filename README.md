@@ -135,6 +135,8 @@ The [original JSONPath definition][8] includes a few more features:
   point to consider writing a real OCaml program with [Yojson combinators][5]
   or an [ATD][6].
 
+I need to improve the error handling, especially for the parser.
+
 [1]: https://developer.gnome.org/json-glib/unstable/JsonPath.html
 [2]: http://www.w3.org/TR/xpath/
 [3]: http://www.json.org/
