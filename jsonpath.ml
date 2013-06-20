@@ -1,7 +1,4 @@
 open Core_kernel.Std
-open Printf
-module Json = Yojson.Basic
-module J = Json.Util
 
 (* All lists are in reverse order of user entry.
    Example: $.foo[1,2,3] is parsed to [Index [3; 2; 1]; Field ["foo"]] *)
@@ -16,7 +13,7 @@ type component =
 type path = component list
 
 (* Depth-first search through a JSON value
-   for all sub-values associated with any key in names. *)
+   for all values associated with any key in names. *)
 let search names json =
   let rec collect name = function
     | `Bool _ | `Float _ | `Int _ | `Null | `String _ ->
@@ -30,27 +27,36 @@ let search names json =
         List.concat_map l (collect name)
   in
   List.fold names ~init:[] ~f:(fun results name ->
-    List.append (collect name json) results
+    List.append results (collect name json)
   )
+
+let all_sub_values = function
+  | `Bool _ | `Float _ | `Int _ | `Null | `String _ -> []
+  | `Assoc obj -> List.map obj snd
+  | `List l -> l
 
 (* Perform a path operation on a single JSON value.
    Each operation may return multiple JSON results. *)
 let eval_component operation json =
+  let module J = Yojson.Basic.Util in
   match operation with
   | Wildcard ->
-      J.to_list json
+      all_sub_values json
   | Field names ->
-      List.rev_map names (fun name -> J.member name json)
-  | Search [] ->
-      [json] (* Does nothing *)
+      List.map names (fun name -> J.member name json)
   | Search names ->
       search names json
   | Index idxs ->
-      List.rev_map idxs (fun i -> J.index i json)
+      let a = Array.of_list (J.to_list json) in
+      List.map idxs (fun i -> a.(i))
   | Slice (start, maybe_stop) ->
       let l = J.to_list json in
-      let stop = Option.value maybe_stop ~default:(List.length l) in
-      List.slice l start stop (* Core does JS-style slicing *)
+      let max_stop = List.length l in
+      let stop = Option.value maybe_stop ~default:max_stop in
+      let clip i =
+        if i < 0 then 0 else if i > max_stop then max_stop else i
+      in
+      List.slice l (clip start) (clip stop)
 
 (* Apply the components of the path
    to each JSON value in the list of values returned so far,
@@ -59,23 +65,22 @@ let eval json path =
   let apply oper jsons = List.concat_map jsons (eval_component oper) in
   List.fold_right path ~f:apply ~init:[json]
 
+let print_component =
+  let comma = String.concat ~sep:"','" in
+  let json_string s = Yojson.Basic.to_string (`String s) in
+  function
+  | Wildcard ->
+      "[*]"
+  | Field names ->
+      "['" ^ comma (List.rev_map names json_string) ^ "']"
+  | Search names ->
+      "..['" ^ comma (List.rev_map names json_string) ^ "']"
+  | Index idxs ->
+      "[" ^ comma (List.rev_map idxs string_of_int) ^ "]"
+  | Slice (start, None) ->
+      "[" ^ string_of_int start ^ ":]"
+  | Slice (start, Some stop) ->
+      "[" ^ string_of_int start ^ ":" ^ string_of_int stop ^ "]"
+
 (* Pretty-print a path (using the more general bracket syntax) *)
-let to_string path =
-  let comma = String.concat ~sep:"," in
-  let print_oper = function
-    | Wildcard ->
-        "[*]"
-    | Field names ->
-        "[" ^ comma (List.rev names) ^ "]"
-    | Search [] ->
-        "..*"
-    | Search names ->
-        "..[" ^ comma (List.rev names) ^ "]"
-    | Index idxs ->
-        "[" ^ comma (List.rev_map idxs string_of_int) ^ "]"
-    | Slice (start, None) ->
-        "[" ^ string_of_int start ^ ":]"
-    | Slice (start, Some stop) ->
-        "[" ^ string_of_int start ^ ":" ^ string_of_int stop ^ "]"
-  in
-  "$" ^ String.concat (List.rev_map path print_oper)
+let to_string path = "$" ^ String.concat (List.rev_map path print_component)

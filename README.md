@@ -65,8 +65,8 @@ example:
 
 In general, the allowed components of a path are:
 
-- `.*`: Wildcard; returns all elements of a JSON array, or all members of a
-  JSON object (just the values, without their keys)
+- `.*` or `[*]`: Wildcard; returns all elements of a JSON array, or all members
+  of a JSON object (just the values, without their keys)
 - `.field_name`: Returns the value with that name from a JSON object, or null if
   the name is not present. Allowed name characters: `[A-Za-z0-9_]`, not starting
   with a digit.
@@ -108,9 +108,11 @@ The city and name of the store, in that order: `'$.store["city","name"]'`
     ["New York","Jim's Sporting Goods"]
     ["Los Angeles","Bob's Electronics"]
 
-If the operation you want cannot be expressed in a single path, you can
-specify multiple paths on the command line. jsonpath will apply them all and
-merge the results together, preserving order. For instance:
+### Applying Multiple Paths
+
+If the operation you want cannot be expressed in a single path, you can specify
+multiple paths on the command line. `jsonpath` will apply them all and merge
+the results together, preserving their order. For instance:
 
 The name of the store, then all its prices:
 
@@ -128,8 +130,9 @@ The [original JSONPath definition][8] includes a few more features:
   supported. If you want to write an OCaml program, write an OCaml program.
 - Filter expressions, using a restricted set of operators, like `[?(@.price >
   100)]`. I might add support for these, but I'm undecided... the syntax is
-  really awful, and this might be a good point to consider writing a
-  full-fledged OCaml program with [Yojson combinators][5] or an [ATD][6].
+  really awful, and if you feel the need for these filters, it may be a good
+  point to consider writing a real OCaml program with [Yojson combinators][5]
+  or an [ATD][6].
 
 [1]: http://goessner.net/articles/JsonPath/
 [2]: http://www.w3.org/TR/xpath/

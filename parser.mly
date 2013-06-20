@@ -13,36 +13,30 @@
 %%
 
 main:
-  | path EOF    { $1 }
+  | p = path; EOF    { p }
 
 path:
-  |                                         { [] }
-  | DOLLAR                                  { [] }
-  | path dot_component                      { $2 :: $1 }
-  | path LBRAC brac_list RBRAC              { $3 :: $1 }
-  | path DOT DOT LBRAC search_list RBRAC    { $5 :: $1 }
+  |                                                    { [] }
+  | DOLLAR                                             { [] }
+  | t = path; h = dot_component                        { h :: t }
+  | t = path; LBRAC; h = bracketed; RBRAC              { h :: t }
+  | t = path; DOT DOT LBRAC; h = search; RBRAC         { h :: t }
 
 dot_component:
-  | DOT STAR          { Wildcard }
-  | DOT STRING        { Field [$2] }
-  | DOT DOT STAR      { Search [] }
-  | DOT DOT STRING    { Search [$3] }
+  | DOT STAR               { Wildcard }
+  | DOT; s = STRING        { Field [s] }
+  | DOT DOT; s = STRING    { Search [s] }
 
-brac_list:
-  | STAR             { Wildcard }
-  | string_list      { Field $1 }
-  | int_list         { Index $1 }
-  | INT COLON        { Slice ($1, None) }
-  | COLON INT        { Slice (0, Some $2) }
-  | INT COLON INT    { Slice ($1, Some $3) }
+bracketed:
+  | STAR                                           { Wildcard }
+  | l = separated_nonempty_list(COMMA, QSTRING)    { Field l }
+  | l = separated_nonempty_list(COMMA, INT)        { Index l }
+  | s = slice                                      { s }
 
-search_list:
-  | string_list    { Search $1 }
+slice:
+  | COLON; stop = INT                 { Slice (0, Some stop) }
+  | start = INT; COLON                { Slice (start, None) }
+  | start = INT; COLON; stop = INT    { Slice (start, Some stop) }
 
-string_list:
-  | QSTRING                      { [$1] }
-  | string_list COMMA QSTRING    { $3 :: $1 }
-
-int_list:
-  | INT                   { [$1] }
-  | int_list COMMA INT    { $3 :: $1 }
+search:
+  | l = separated_nonempty_list(COMMA, QSTRING)    { Search l }
