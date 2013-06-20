@@ -67,9 +67,9 @@ In general, the allowed components of a path are:
 
 - `.*` or `[*]`: Wildcard; returns all elements of a JSON array, or all members
   of a JSON object (just the values, without their keys)
-- `.field_name`: Returns the value with that name from a JSON object, or null if
-  the name is not present. Allowed name characters: `[A-Za-z0-9_]`, not starting
-  with a digit.
+- `.field_name`: Returns the value with that name from a JSON object, or `null`
+  if the name is not present. Allowed name characters: `[A-Za-z0-9_]`, not
+  starting with a digit.
 - `['field_name']`: Alternate syntax allowing arbitrary name characters. Quotes
   are required, but you can use single or double quotes. Inside a quoted name,
   all characters are literal except the quote, which must be escaped with
@@ -81,10 +81,11 @@ In general, the allowed components of a path are:
 - `..['field1','field2']`: You can also search for multiple names. The output
   will have all results for field1 followed by all results for field2.
 - `[0]`: Returns the first element of an array. Negative numbers are allowed;
-  they index from the end of the array.
+  they index from the end of the array. Indexing out of bounds is an error.
 - `[0,1,2]`: Returns the first, second, and third elements.
 - `[1:3]`: Slice the array JavaScript-style, returning the second and third
-  elements.
+  elements. Either number can be omitted. Numbers outside the array bounds are
+  clipped to be within the bounds.
 
 Here are some more examples of paths:
 
@@ -124,7 +125,7 @@ The name of the store, then all its prices:
 
 The [original JSONPath definition][8] includes a few more features:
 
-- Step values in slices, like `[1:10:2]`, will be implemented soon.
+- Step values in slices, like `[1:10:2]`. Could add these.
 - "Expressions of the underlying script language" in parentheses, applied to
   the current node called `@`, like `[(@.length - 1)]`. This will never be
   supported. If you want to write an OCaml program, write an OCaml program.
@@ -134,7 +135,7 @@ The [original JSONPath definition][8] includes a few more features:
   point to consider writing a real OCaml program with [Yojson combinators][5]
   or an [ATD][6].
 
-[1]: http://goessner.net/articles/JsonPath/
+[1]: https://developer.gnome.org/json-glib/unstable/JsonPath.html
 [2]: http://www.w3.org/TR/xpath/
 [3]: http://www.json.org/
 [4]: http://ocaml.org/
