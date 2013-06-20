@@ -6,6 +6,10 @@
     let open Yojson.Basic in
     let lexbuf = Lexing.from_string ("\"" ^ s ^ "\"") in
     read_string (init_lexer ()) lexbuf
+
+  let syntax_error pos c =
+    let msg = sprintf "Unexpected character '%c' at position %i" c pos in
+    raise (Jsonpath.Syntax_error msg)
 }
 
 let letter = ['A'-'Z' 'a'-'z']
@@ -28,7 +32,7 @@ rule token = parse
   | number as s        { INT (int_of_string s) }
   | identifier as s    { STRING s }
   | eof                { EOF }
-  | _ as c             { failwith ("Syntax error: " ^ String.make 1 c) }
+  | _ as c             { syntax_error (Lexing.lexeme_start lexbuf) c }
 
 and qstring q buf = parse
   | quote as c           { if c = q then json_string (Buffer.contents buf)

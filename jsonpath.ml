@@ -9,6 +9,8 @@ type component =
 
 type path = component list
 
+exception Syntax_error of string
+
 (* Depth-first search through a JSON value
    for all values associated with any key in names. *)
 let search names json =
