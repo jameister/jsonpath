@@ -25,8 +25,8 @@ writing a throwaway program. `jsonpath` is for those times.
 
 ### Setup
 
-Building requires OCaml 3.12 or newer with `Findlib`, `Core_kernel`, and
-`Yojson`. Those libraries are available in [OPAM][7]. Then just type make,
+Building requires OCaml 3.12 or newer with `Findlib`, `Core_kernel`, `Menhir`,
+and `Yojson`. Those libraries are available in [OPAM][7]. Then just type make,
 which will invoke OCamlbuild and produce the executable `jsonpath`.
 
 ### Usage
