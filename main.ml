@@ -13,7 +13,7 @@ let () =
         let json = Json.from_string line in
         let process results path_str =
           let lexbuf = Lexing.from_string path_str in
-          let path = Parser.main Lexer.token lexbuf in
+          let path = Parser.path Lexer.token lexbuf in
           List.append results (Jsonpath.eval json path)
         in
         let results = List.fold path_args ~init:[] ~f:process in

@@ -1,8 +1,5 @@
 open Core_kernel.Std
 
-(* All lists are in reverse order of user entry.
-   Example: $.foo[1,2,3] is parsed to [Index [3; 2; 1]; Field ["foo"]] *)
-
 type component =
   | Wildcard
   | Field of string list
@@ -62,8 +59,8 @@ let eval_component operation json =
    to each JSON value in the list of values returned so far,
    starting from the root. *)
 let eval json path =
-  let apply oper jsons = List.concat_map jsons (eval_component oper) in
-  List.fold_right path ~f:apply ~init:[json]
+  let apply jsons oper = List.concat_map jsons (eval_component oper) in
+  List.fold path ~init:[json] ~f:apply
 
 let print_component =
   let comma = String.concat ~sep:"','" in
@@ -72,15 +69,15 @@ let print_component =
   | Wildcard ->
       "[*]"
   | Field names ->
-      "['" ^ comma (List.rev_map names json_string) ^ "']"
+      "['" ^ comma (List.map names json_string) ^ "']"
   | Search names ->
-      "..['" ^ comma (List.rev_map names json_string) ^ "']"
+      "..['" ^ comma (List.map names json_string) ^ "']"
   | Index idxs ->
-      "[" ^ comma (List.rev_map idxs string_of_int) ^ "]"
+      "[" ^ comma (List.map idxs string_of_int) ^ "]"
   | Slice (start, None) ->
       "[" ^ string_of_int start ^ ":]"
   | Slice (start, Some stop) ->
       "[" ^ string_of_int start ^ ":" ^ string_of_int stop ^ "]"
 
 (* Pretty-print a path (using the more general bracket syntax) *)
-let to_string path = "$" ^ String.concat (List.rev_map path print_component)
+let to_string path = "$" ^ String.concat (List.map path print_component)

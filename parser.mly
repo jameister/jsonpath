@@ -7,25 +7,20 @@
 %token DOLLAR DOT LBRAC RBRAC STAR COLON COMMA
 %token EOF
 
-%start main
-%type <Jsonpath.path> main
+%start path
+%type <Jsonpath.path> path
 
 %%
 
-main:
-  | p = path; EOF    { p }
-
 path:
-  |                                                    { [] }
-  | DOLLAR                                             { [] }
-  | t = path; h = dot_component                        { h :: t }
-  | t = path; LBRAC; h = bracketed; RBRAC              { h :: t }
-  | t = path; DOT DOT LBRAC; h = search; RBRAC         { h :: t }
+  | DOLLAR? path = component+ EOF    { path }
 
-dot_component:
-  | DOT STAR               { Wildcard }
-  | DOT; s = STRING        { Field [s] }
-  | DOT DOT; s = STRING    { Search [s] }
+component:
+  | DOT STAR                                       { Wildcard }
+  | DOT s = STRING                                 { Field [s] }
+  | DOT DOT s = STRING                             { Search [s] }
+  | c = delimited(LBRAC, bracketed, RBRAC)         { c }
+  | DOT DOT c = delimited(LBRAC, search, RBRAC)    { c }
 
 bracketed:
   | STAR                                           { Wildcard }
